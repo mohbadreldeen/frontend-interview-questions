@@ -1,6 +1,14 @@
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { BookOpen, RotateCcw, Zap, Printer, Moon, Sun } from "lucide-react";
+import {
+    BookOpen,
+    RotateCcw,
+    Zap,
+    Printer,
+    Moon,
+    Sun,
+    Github,
+} from "lucide-react";
 import { useAppContext } from "../context/AppContext";
 
 interface HeaderProps {
@@ -29,6 +37,15 @@ export function Header({ onStartQuiz, onPrint }: HeaderProps) {
                 Comprehensive senior-level questions covering React, Next.js,
                 JavaScript, CSS, and modern web development practices
             </p>
+            <a
+                href="https://github.com/mohbadreldeen/frontend-interview-questions"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 mt-3 px-3 py-1.5 rounded-full border border-border text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+                <Github size={16} />
+                GitHub Repo
+            </a>
             <div className="flex items-center gap-4 mt-4 flex-wrap">
                 <Badge
                     variant="secondary"
@@ -69,7 +86,7 @@ export function Header({ onStartQuiz, onPrint }: HeaderProps) {
                     variant="outline"
                     size="sm"
                     onClick={toggleDarkMode}
-                    className="gap-2 no-print rounded-full cursor-pointer"
+                    className="no-print rounded-full cursor-pointer h-9 w-9 p-0"
                     title={
                         isDarkMode
                             ? "Switch to light mode"

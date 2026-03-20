@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Input } from "./components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "./components/ui/tabs";
-import { Search } from "lucide-react";
+import { Search, Github } from "lucide-react";
 import { QuizMode } from "./components/QuizMode";
 import { Header } from "./components/Header";
 import { NoQuestionsFound } from "./components/NoQuestionsFound";
@@ -94,6 +94,18 @@ function App() {
                         onToggleExpand={toggleExpand}
                     />
                 )}
+
+                <footer className="mt-10 pt-6 border-t border-border text-center">
+                    <a
+                        href="https://github.com/mohbadreldeen/frontend-interview-questions"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                    >
+                        <Github size={16} />
+                        GitHub Repo
+                    </a>
+                </footer>
             </div>
         </div>
     );
