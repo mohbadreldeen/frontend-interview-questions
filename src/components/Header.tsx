@@ -58,7 +58,7 @@ export function Header({ onStartQuiz, onPrint }: HeaderProps) {
                         variant="ghost"
                         size="sm"
                         onClick={resetProgress}
-                        className="gap-2"
+                        className="gap-2 rounded-full cursor-pointer"
                     >
                         <RotateCcw size={16} />
                         Reset Progress

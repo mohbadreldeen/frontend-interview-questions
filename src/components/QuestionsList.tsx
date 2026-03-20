@@ -48,7 +48,7 @@ export function QuestionsList({
                                                 {q.category}
                                             </Badge>
                                             {isStudied && (
-                                                <Badge className="bg-accent text-accent-foreground text-xs studied-badge no-print">
+                                                <Badge className="bg-accent text-white text-xs studied-badge no-print">
                                                     <Check
                                                         size={12}
                                                         strokeWidth={3}
@@ -73,14 +73,15 @@ export function QuestionsList({
                                         }}
                                         className="shrink-0"
                                     >
-                                        <Check
-                                            size={20}
-                                            className={
+                                        <span
+                                            className={`flex h-5 w-5 items-center justify-center rounded-full border transition-colors ${
                                                 isStudied
-                                                    ? "text-accent fill-accent"
-                                                    : ""
-                                            }
-                                        />
+                                                    ? "border-accent bg-accent text-white"
+                                                    : "border-muted-foreground/40 text-transparent"
+                                            }`}
+                                        >
+                                            <Check size={12} strokeWidth={3} />
+                                        </span>
                                     </Button>
                                     {isExpanded ? (
                                         <ChevronUp
