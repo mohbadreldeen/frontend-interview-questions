@@ -16,7 +16,8 @@ export const categories = [
   "Next.js",
   "Performance",
   "Testing",
-  "Web APIs"
+  "Web APIs",
+  "WordPress"
 ];
 
 export const questions: Question[] = [
@@ -409,5 +410,131 @@ export const questions: Question[] = [
     question: "What is CORS? How does it work?",
     answer: "CORS (Cross-Origin Resource Sharing) is a security mechanism that controls cross-origin HTTP requests:\n\n• Browsers block cross-origin requests by default (Same-Origin Policy)\n• CORS allows servers to specify which origins can access resources\n• Uses HTTP headers to communicate permissions\n• Preflight requests (OPTIONS) check permissions before actual request\n\nHeaders:\n• Access-Control-Allow-Origin: Allowed origins\n• Access-Control-Allow-Methods: Allowed HTTP methods\n• Access-Control-Allow-Headers: Allowed request headers\n• Access-Control-Allow-Credentials: Allow cookies\n\nPreflight triggered by: custom headers, methods other than GET/POST, certain content types",
     example: "// Server response headers (Node.js/Express)\napp.use((req, res, next) => {\n  res.header('Access-Control-Allow-Origin', 'https://example.com');\n  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');\n  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');\n  res.header('Access-Control-Allow-Credentials', 'true');\n  \n  // Handle preflight\n  if (req.method === 'OPTIONS') {\n    return res.sendStatus(200);\n  }\n  next();\n});\n\n// Client - fetch with credentials\nfetch('https://api.example.com/data', {\n  method: 'POST',\n  credentials: 'include', // Send cookies\n  headers: {\n    'Content-Type': 'application/json'\n  },\n  body: JSON.stringify({ data: 'value' })\n});\n\n// CORS error: Server must send proper headers\n// Solutions: Configure server, use proxy, or JSONP (legacy)"
+  },
+  {
+    id: "wp-1",
+    category: "WordPress",
+    question: "Explain the WordPress request lifecycle from browser request to rendered HTML.",
+    answer: "A typical WordPress request follows this flow:\n\n• Web server routes request to index.php\n• WordPress bootstrap loads core via wp-load.php and wp-settings.php\n• Plugins, must-use plugins, theme functions.php, and hooks are registered\n• Main query is built based on rewrite rules and query vars\n• Template hierarchy resolves which theme template to render\n• The Loop renders posts/content from the main query\n• Actions and filters allow customization at each stage\n\nA strong answer should mention bootstrapping, hooks, WP_Query, and template hierarchy.",
+    example: "// High-level lifecycle hooks\nadd_action('muplugins_loaded', function () {});\nadd_action('plugins_loaded', function () {});\nadd_action('after_setup_theme', function () {});\nadd_action('init', function () {});\nadd_action('wp', function () {});\nadd_action('template_redirect', function () {});\nadd_action('wp_head', function () {});"
+  },
+  {
+    id: "wp-2",
+    category: "WordPress",
+    question: "What is the difference between actions and filters in WordPress hooks?",
+    answer: "Both are hook systems, but they serve different purposes:\n\n• Actions: Run side effects at specific points. They do not require returning a value.\n• Filters: Modify and return data passed through the hook.\n\nCommon mistakes:\n• Using an action when data transformation is needed\n• Forgetting to return modified value in a filter\n• Wrong priority or accepted_args causing unexpected behavior",
+    example: "// Action: perform behavior\nadd_action('init', function () {\n  // register post type, enqueue logic, etc.\n});\n\n// Filter: transform data and return\nadd_filter('the_title', function ($title) {\n  return '[Interview] ' . $title;\n});"
+  },
+  {
+    id: "wp-3",
+    category: "WordPress",
+    question: "When would you build a custom post type (CPT) and custom taxonomy?",
+    answer: "Use a CPT when content has unique fields, templates, and lifecycle different from Posts/Pages (e.g., Jobs, Events, Case Studies).\n\nUse taxonomy when you need classification and filtering:\n• Hierarchical taxonomy (like categories)\n• Non-hierarchical taxonomy (like tags)\n\nInterview depth:\n• Explain public/show_ui/show_in_rest choices\n• Mention rewrite slugs and archive behavior\n• Mention capability mapping for permissions",
+    example: "add_action('init', function () {\n  register_post_type('job', [\n    'label' => 'Jobs',\n    'public' => true,\n    'show_in_rest' => true,\n    'supports' => ['title', 'editor', 'thumbnail'],\n    'has_archive' => true,\n    'rewrite' => ['slug' => 'careers']\n  ]);\n\n  register_taxonomy('job_department', 'job', [\n    'label' => 'Departments',\n    'hierarchical' => true,\n    'show_in_rest' => true\n  ]);\n});"
+  },
+  {
+    id: "wp-4",
+    category: "WordPress",
+    question: "How does WP_Query work, and what are common performance pitfalls?",
+    answer: "WP_Query builds SQL based on query args and returns posts with metadata/caches depending on settings.\n\nCommon pitfalls:\n• Unbounded queries (no pagination)\n• Complex meta_query without indexes\n• Running many queries inside loops\n• Not resetting post data after custom loops\n• Querying full post objects when only IDs are needed\n\nPerformance-minded candidates mention:\n• no_found_rows => true for non-paginated queries\n• fields => 'ids' when possible\n• update_post_meta_cache and update_post_term_cache tuning",
+    example: "$q = new WP_Query([\n  'post_type' => 'job',\n  'posts_per_page' => 10,\n  'paged' => max(1, get_query_var('paged')),\n  'no_found_rows' => false\n]);\n\nif ($q->have_posts()) {\n  while ($q->have_posts()) {\n    $q->the_post();\n    the_title();\n  }\n}\nwp_reset_postdata();"
+  },
+  {
+    id: "wp-5",
+    category: "WordPress",
+    question: "How do you secure WordPress forms and admin actions?",
+    answer: "Key controls for secure form/action handling:\n\n• Nonces: protect against CSRF\n• Capability checks: current_user_can() before sensitive actions\n• Input sanitization: sanitize_text_field, sanitize_email, absint, etc.\n• Output escaping: esc_html, esc_attr, esc_url, wp_kses_post\n• Prepared SQL: use $wpdb->prepare for custom queries\n\nA complete answer includes all four phases: authenticate, authorize, sanitize, escape.",
+    example: "// Form nonce\nwp_nonce_field('save_candidate', 'candidate_nonce');\n\n// Server-side validation\nif (!isset($_POST['candidate_nonce']) || !wp_verify_nonce($_POST['candidate_nonce'], 'save_candidate')) {\n  wp_die('Invalid request');\n}\n\nif (!current_user_can('edit_posts')) {\n  wp_die('Forbidden');\n}\n\n$name = sanitize_text_field($_POST['name'] ?? '');\necho esc_html($name);"
+  },
+  {
+    id: "wp-6",
+    category: "WordPress",
+    question: "What is the difference between sanitization, validation, and escaping in WordPress?",
+    answer: "These are different security layers:\n\n• Validation: Check if data is acceptable (format/range/rules)\n• Sanitization: Clean/normalize input into safe storage format\n• Escaping: Encode output for the target context right before render\n\nRule of thumb:\n• Validate + sanitize on input\n• Escape on output\n• Never trust database content blindly",
+    example: "$email = $_POST['email'] ?? '';\n\nif (!is_email($email)) {\n  wp_die('Invalid email');\n}\n\n$clean_email = sanitize_email($email);\nupdate_option('candidate_email', $clean_email);\n\n// Later in HTML context\necho esc_html(get_option('candidate_email'));"
+  },
+  {
+    id: "wp-7",
+    category: "WordPress",
+    question: "How do WordPress roles and capabilities work?",
+    answer: "WordPress authorization is capability-based:\n\n• Roles are collections of capabilities\n• Users have roles, and permission checks should use capabilities\n• current_user_can() is preferred over role-name checks\n• Custom post types can map_meta_cap to fine-tune permissions\n\nStrong interviews mention principle of least privilege and avoiding direct role string comparisons.",
+    example: "add_action('init', function () {\n  add_role('content_reviewer', 'Content Reviewer', [\n    'read' => true,\n    'edit_posts' => true,\n    'edit_others_posts' => true,\n    'publish_posts' => false\n  ]);\n});\n\nif (current_user_can('edit_others_posts')) {\n  // allow moderation action\n}"
+  },
+  {
+    id: "wp-8",
+    category: "WordPress",
+    question: "Explain the WordPress database structure and when to use custom tables.",
+    answer: "Core tables include posts, postmeta, users, usermeta, terms, term_taxonomy, term_relationships, comments, commentmeta, and options.\n\nUse postmeta/options first for moderate datasets. Consider custom tables when:\n• High write volume\n• Complex relational queries\n• Need strict schema/index control\n• postmeta queries become slow at scale\n\nCandidates should mention migration strategy and backward compatibility.",
+    example: "global $wpdb;\n$table = $wpdb->prefix . 'job_applications';\n\n$sql = \"CREATE TABLE $table (\n  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,\n  job_id BIGINT UNSIGNED NOT NULL,\n  email VARCHAR(190) NOT NULL,\n  created_at DATETIME NOT NULL,\n  PRIMARY KEY (id),\n  KEY job_id (job_id),\n  KEY email (email)\n) {$wpdb->get_charset_collate()};\";\n\nrequire_once ABSPATH . 'wp-admin/includes/upgrade.php';\ndbDelta($sql);"
+  },
+  {
+    id: "wp-9",
+    category: "WordPress",
+    question: "What are transients and object caching in WordPress?",
+    answer: "Transients provide temporary cached values with expiration. They may be stored in DB or external object cache.\n\nObject caching stores query/object results in memory (e.g., Redis/Memcached when persistent cache is enabled).\n\nBest practices:\n• Cache expensive computations and remote API calls\n• Use cache invalidation on content update hooks\n• Avoid extremely long or extremely short TTL blindly",
+    example: "$cache_key = 'jobs_feed_v1';\n$data = get_transient($cache_key);\n\nif (false === $data) {\n  $data = wp_remote_get('https://api.example.com/jobs');\n  set_transient($cache_key, $data, 15 * MINUTE_IN_SECONDS);\n}\n\nadd_action('save_post_job', function () use ($cache_key) {\n  delete_transient($cache_key);\n});"
+  },
+  {
+    id: "wp-10",
+    category: "WordPress",
+    question: "How do you optimize a slow WordPress site?",
+    answer: "A practical optimization plan covers multiple layers:\n\n• Measure first: Query Monitor, Lighthouse, server metrics\n• Enable full-page caching and persistent object cache\n• Optimize queries (remove heavy meta_query, reduce query count)\n• Optimize assets (critical CSS, minify, defer, lazy-load)\n• Optimize images (WebP/AVIF, proper sizes)\n• Use CDN and HTTP compression\n• Reduce plugin bloat and expensive hooks\n• Tune PHP version/opcache and DB indexes\n\nGood candidates prioritize profiling before making changes.",
+    example: "// Example: defer a script\nadd_filter('script_loader_tag', function ($tag, $handle) {\n  if ('theme-main' !== $handle) return $tag;\n  return str_replace(' src', ' defer src', $tag);\n}, 10, 2);"
+  },
+  {
+    id: "wp-11",
+    category: "WordPress",
+    question: "What is the WordPress REST API, and how do you create custom endpoints?",
+    answer: "WordPress REST API exposes resources under /wp-json/.\n\nWhy it matters:\n• Headless architectures\n• Integrations with mobile/SPAs\n• Structured CRUD over posts/meta/custom data\n\nFor custom endpoints:\n• Register routes on rest_api_init\n• Define methods, callback, permission_callback\n• Validate/sanitize request params",
+    example: "add_action('rest_api_init', function () {\n  register_rest_route('interview/v1', '/jobs/(?P<id>\\d+)', [\n    'methods' => 'GET',\n    'callback' => function (WP_REST_Request $request) {\n      $id = (int) $request['id'];\n      return rest_ensure_response(['id' => $id]);\n    },\n    'permission_callback' => '__return_true'\n  ]);\n});"
+  },
+  {
+    id: "wp-12",
+    category: "WordPress",
+    question: "How do you build and register a Gutenberg block?",
+    answer: "Modern blocks are typically built with @wordpress/scripts and registered via block.json.\n\nKey parts:\n• block.json metadata\n• Editor script/style and optional frontend style\n• edit() and save() for static blocks, or render_callback for dynamic blocks\n• Attributes for serializable state\n\nDynamic blocks are preferred when output depends on server-side data.",
+    example: "// PHP registration\nadd_action('init', function () {\n  register_block_type(__DIR__ . '/build/featured-job', [\n    'render_callback' => function ($attributes) {\n      $title = esc_html($attributes['title'] ?? '');\n      return \"<div class='featured-job'>{$title}</div>\";\n    }\n  ]);\n});"
+  },
+  {
+    id: "wp-13",
+    category: "WordPress",
+    question: "What is the difference between a parent theme, child theme, and custom plugin?",
+    answer: "Use each based on change ownership and portability:\n\n• Parent theme: base design and templates\n• Child theme: override parent styles/templates safely through updates\n• Plugin: business logic/features reusable across themes\n\nRule:\n• Presentation in theme\n• Functionality in plugin\n\nThis separation avoids losing features when switching themes.",
+    example: "/* style.css in child theme */\n/*\nTheme Name: My Child Theme\nTemplate: twentytwentyfour\n*/\n\n// functions.php in child theme\nadd_action('wp_enqueue_scripts', function () {\n  wp_enqueue_style('parent-style', get_template_directory_uri() . '/style.css');\n});"
+  },
+  {
+    id: "wp-14",
+    category: "WordPress",
+    question: "How does WordPress cron (WP-Cron) work, and what are its limitations?",
+    answer: "WP-Cron is pseudo-cron triggered by site traffic, not a true system scheduler.\n\nImplications:\n• Low-traffic sites may run tasks late\n• High-traffic sites may trigger overlapping requests\n\nBest practice in production:\n• Disable built-in trigger\n• Run wp-cron.php using real server cron at fixed intervals\n• Ensure callbacks are idempotent and lock long tasks",
+    example: "// Schedule event\nif (!wp_next_scheduled('sync_jobs_event')) {\n  wp_schedule_event(time(), 'hourly', 'sync_jobs_event');\n}\n\nadd_action('sync_jobs_event', function () {\n  // sync external jobs feed\n});\n\n// In wp-config.php (production pattern)\n// define('DISABLE_WP_CRON', true);"
+  },
+  {
+    id: "wp-15",
+    category: "WordPress",
+    question: "How do you debug WordPress issues in development and staging?",
+    answer: "A strong approach combines logs, profiling, and controlled environments:\n\n• Enable WP_DEBUG, WP_DEBUG_LOG, SCRIPT_DEBUG in non-production\n• Inspect PHP error logs and browser console/network panel\n• Use Query Monitor for hooks, queries, HTTP calls\n• Reproduce with minimal plugins/theme isolation\n• Compare environment differences (PHP, DB, cache, web server)\n\nInterview-ready answer includes safe logging practices and no debug display in production.",
+    example: "// wp-config.php (dev/staging)\ndefine('WP_DEBUG', true);\ndefine('WP_DEBUG_LOG', true);\ndefine('WP_DEBUG_DISPLAY', false);\ndefine('SCRIPT_DEBUG', true);\n\n// Add contextual log\nerror_log('Jobs sync started: ' . gmdate('c'));"
+  },
+  {
+    id: "wp-16",
+    category: "WordPress",
+    question: "What is multisite in WordPress, and when should you use it?",
+    answer: "Multisite lets one WordPress installation run multiple sites with shared core and codebase.\n\nUse it when:\n• Many related sites need centralized management\n• Shared plugins/themes are desired\n• Tenant isolation requirements are moderate\n\nTrade-offs:\n• Plugin compatibility can vary\n• Operational complexity increases\n• Data is separate per site via table prefixes",
+    example: "// Common multisite helpers\n$site_id = get_current_blog_id();\n\nswitch_to_blog(2);\n$posts = get_posts(['numberposts' => 5]);\nrestore_current_blog();"
+  },
+  {
+    id: "wp-17",
+    category: "WordPress",
+    question: "How do you approach plugin architecture for long-term maintainability?",
+    answer: "Maintainable plugin design usually includes:\n\n• Clear separation of concerns (admin, public, API, domain logic)\n• Namespaced classes to avoid collisions\n• Bootstrapping via service container or loader class\n• Minimal global state\n• Hooks registered in dedicated modules\n• Automated tests for critical behavior\n\nCandidates should discuss semantic versioning and upgrade routines for schema/options.",
+    example: "// Simplified plugin bootstrap\nnamespace Interview\\JobsPlugin;\n\nfinal class Plugin {\n  public function boot(): void {\n    add_action('init', [PostTypes::class, 'register']);\n    add_action('rest_api_init', [ApiRoutes::class, 'register']);\n  }\n}\n\n(new Plugin())->boot();"
+  },
+  {
+    id: "wp-18",
+    category: "WordPress",
+    question: "How would you harden WordPress for production security?",
+    answer: "Production hardening is layered:\n\n• Keep core/themes/plugins updated\n• Enforce strong auth (MFA, least privilege, limit login attempts)\n• Disable file editing in admin\n• Restrict XML-RPC if not needed\n• Use WAF/CDN and rate limiting\n• Enforce HTTPS and secure headers\n• Perform regular backups + restore drills\n• Scan dependencies and monitor integrity\n\nGood answers balance platform, application, and operational controls.",
+    example: "// wp-config.php hardening examples\ndefine('DISALLOW_FILE_EDIT', true);\ndefine('FORCE_SSL_ADMIN', true);\n\n// Example: deny xmlrpc in web server config if not required\n// location = /xmlrpc.php { deny all; }"
   }
 ];
